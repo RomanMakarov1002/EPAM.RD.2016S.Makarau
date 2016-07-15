@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace UserStorageSystem
 {
-    public interface IStorage : IEnumerable<User>
+    public interface IService
     {
-        int Add(int id, User user);
+        int Status { get; }    // 1 - master, 2+ - slave
+        int Add(User user);
         IEnumerable<int> SearchForUser(ISearchCriteria searchCriteria);
         IEnumerable<int> SearchForUser(Predicate<User>[] criteria);
         void Delete(int id);
-        void SaveToXml(int id);
-        int UpLoadFromXml();
-        Dictionary<int, User> ReturnData();
+        void Save();
+        void UpLoad();
     }
 }

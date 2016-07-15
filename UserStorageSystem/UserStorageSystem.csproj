@@ -31,6 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -40,14 +41,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client.cs" />
     <Compile Include="CustomIterator.cs" />
     <Compile Include="ISearchCriteria.cs" />
+    <Compile Include="IService.cs" />
     <Compile Include="IStorage.cs" />
     <Compile Include="IValidation.cs" />
+    <Compile Include="MasterUserService.cs" />
     <Compile Include="MemoryStorage.cs" />
     <Compile Include="SearchCriterias.cs" />
+    <Compile Include="SlaveUserService.cs" />
     <Compile Include="User.cs" />
-    <Compile Include="UserStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

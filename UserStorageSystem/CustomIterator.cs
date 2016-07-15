@@ -54,5 +54,10 @@ namespace UserStorageSystem
             _firstNum = 0;
             _secondNum = 1;
         }
+
+        public IEnumerator<int> GetEnumerator()
+        {
+            return new CustomIterator();
+        } 
     }
 }

@@ -1,8 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 
 
 namespace UserStorageSystem
 {
+    public class ServiceState
+    {
+        public List<User> Users { get; set; }
+        public int GeneratedId { get; set; }
+    }
+
     public enum Gender
     {
         Male = 0,
@@ -25,12 +32,12 @@ namespace UserStorageSystem
 
     public class User : IValidation<User>
     {
-        public string FirstName { get;}
-        public string LastName { get; }
-        public DateTime DateOfBirth { get; }
-        public int PersonalId { get; }
-        public Gender Gender { get; }
-        public Visa[] VisaRecords { get; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public int PersonalId { get; set; }
+        public Gender Gender { get; set; }
+        public Visa[] VisaRecords { get; set; }
 
         public User(string firstName, string lastName, DateTime dateOfBirth, int personalId, Gender gender,
             Visa[] visaRecords)
@@ -42,6 +49,8 @@ namespace UserStorageSystem
             Gender = gender;
             VisaRecords = visaRecords;
         }
+
+        public User() { }
 
         public override bool Equals(object obj)
         {
