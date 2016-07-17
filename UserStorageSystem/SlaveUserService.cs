@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UserStorageSystem
 {
     public class SlaveUserService : IService
     {
         public int Status => 2;
-
+        private static readonly TraceSource ts = new TraceSource("CustomSource");
         private Dictionary<int, User> _tempData; 
 
         public SlaveUserService (Client client ,IStorage storageType)
@@ -18,19 +17,21 @@ namespace UserStorageSystem
             client.Modify += UpdateData;
         }
 
-        public void UpdateData(Dictionary<int, User> tempDictionary)
-        {
-            _tempData = tempDictionary;
-        }
-
         public IEnumerable<int> SearchForUser(Predicate<User>[] criteria)
         {
+            ts.TraceInformation($"SearchForUser request in SlaveService at {DateTime.Now}");
             return _tempData.Where(x => criteria.All(e => e.Invoke(x.Value))).Select(x => x.Key);
         }
 
         public IEnumerable<int> SearchForUser(ISearchCriteria searchCriteria)
         {
+            ts.TraceInformation($"SearchForUser request in SlaveService at {DateTime.Now}");
             return searchCriteria.Search(_tempData.AsEnumerable());
+        }
+
+        private void UpdateData(Dictionary<int, User> tempDictionary)
+        {
+            _tempData = tempDictionary;
         }
 
         public int Add(User user)
