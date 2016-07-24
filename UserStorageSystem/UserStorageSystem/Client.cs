@@ -27,17 +27,16 @@ namespace UserStorageSystem
             for (int i=0; i<n-1; i++)
             {
                 int port = Convert.ToInt32(
-                ((NameValueCollection)ConfigurationManager.GetSection("ClientDefaults"))["ServicePort"+i.ToString()]);
+                ((NameValueCollection)ConfigurationManager.GetSection("ClientDefaults"))["ServicePort"+i]);
                 string ip =
-                    ((NameValueCollection) ConfigurationManager.GetSection("ClientDefaults"))["ServiceIp"+i.ToString()];
+                    ((NameValueCollection) ConfigurationManager.GetSection("ClientDefaults"))["ServiceIp"+i];
                 _defaultNetSettings.Add(new KeyValuePair<int, string>(port,ip));
             }
             for (int i = 0; i < n; i++)
             {
                 if (i == 0)
                 {
-                    MasterUserService mu = new MasterUserService();
-                    Services.Add(mu.CreateInstanceInNewDomain("MasterServiceDomain"+i.ToString(), storageType, enumerator, _defaultNetSettings));
+                    Services.Add(new MasterUserService().CreateInstanceInNewDomain("MasterServiceDomain"+i, storageType, enumerator, _defaultNetSettings));
                 }
                 else
                 {

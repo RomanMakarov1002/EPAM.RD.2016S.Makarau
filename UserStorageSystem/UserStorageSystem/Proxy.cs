@@ -30,14 +30,12 @@ namespace UserStorageSystem
 
         public IEnumerable<int> SearchForUser(ISearchCriteria searchCriteria)
         {
-            int t = new Random().Next(_servicesCount-1) + 1;
-            Console.WriteLine($"Search in slave service{t}");
-            return _services[t].SearchForUser(searchCriteria);
+            return _services[new Random().Next(_servicesCount-1) + 1].SearchForUser(searchCriteria);
         }
 
         public IEnumerable<int> SearchForUser(Predicate<User>[] searchCriteria)
         {
-            return _services[new Random().Next(_servicesCount) +1].SearchForUser(searchCriteria);
+            return _services[new Random().Next(_servicesCount-1) +1].SearchForUser(searchCriteria);
         }
 
         public int Add(User user)
