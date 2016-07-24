@@ -23,3 +23,44 @@ o Delete an user: void Delete(...)
 * When adding a new user there should be a way to set a different set of rules for validating an user entity before adding it: Add(user) -> validation -> exception if not valid or generate and return a new id.
 
 * Add tests.
+
+Day 2
+
+Modify project:
+
+* For those who use Fibonacci sequence as an id: start sequence with last 1 – 1, 2...
+
+* Add an ability to store service state
+
+* A service should have an ability to store it's state in an XML file on disk.
+
+* A service should have an ability to store a last generated ID, so the service can continue generating id from where it stops.
+
+* A filename for XML get from App.config.
+
+* Add an ability to log all requests to a service.
+
+* Use System.Diagnostics.BooleanSwitch for enabling/disabling logging.
+
+* Add a possibility to configure log listeners via App.Config: ConsoleTraceListener, and others.
+
+* Add a replication ability for user service nodes:
+
+* Add an ability to have several instances of user service.
+
+* One service should be Master.
+
+* Other services should be Slaves.
+
+* When Master receives a Add or Delete command, it should send a notification to slave services for updating data.
+
+* If Slave receives Add or Delete command it throws an exception.
+
+* All configuration is stored in App.config: a number of services, their types.
+
+* Create a custom section in App.config file, so the number of instances and their role can be changed there.
+
+Day 3
+
+
+* AppDomain task: https://github.com/epam-lab/dotnetcore/blob/master/Day3/Day3_Domain.sln
