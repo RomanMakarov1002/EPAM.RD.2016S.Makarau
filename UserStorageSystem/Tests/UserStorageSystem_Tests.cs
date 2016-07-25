@@ -1,41 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UserStorageSystem;
+using System.IO;
 
 namespace Tests
 {
     [TestClass]
     public class UserStorageSystem_Tests
     {
+        AppDomainSetup appDomainSetup = new AppDomainSetup
+        {
+            ApplicationBase = AppDomain.CurrentDomain.BaseDirectory,
+            PrivateBinPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MyDomain")
+        };
+
+
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Client_NullArgument_ArgumentNullException()
         {
-           Client client = new Client(null, null);
+           var client1 = new Client(null);
         }
 
         [TestMethod]
         public void Client_SkipParam_CreateWithDefaultValue()
         {
-            Client client = new Client(new MemoryRepository(), new CustomIterator());
-            //Assert.IsTrue(client.Proxy.Count > 1);
+            var client = new Client(new MemoryRepository(new CustomIterator()),null, appDomainSetup);
+            Assert.IsTrue(client.Services.Count > 1);
         }
 
-        [TestMethod]
-        public void Client_Count_CreateCountServices()
-        {
-            int count = 5;
-            Client client = new Client(new MemoryRepository(), new CustomIterator(), count);
-            //Assert.IsTrue(client.Services.Count == 5);
-        }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void Service_IncorrectUser_ValidationException()
         {
-            Client client = new Client(new MemoryRepository(), new CustomIterator());
+            var client = new Client(new MemoryRepository(new CustomIterator()), null, appDomainSetup);
             var user = new User("Alex", " ", DateTime.Now, 123, Gender.Male, null);
             client.Proxy.Add(user);
         }
@@ -43,7 +46,7 @@ namespace Tests
         [TestMethod]
         public void MasterServiceAddUser_CorrectUser_ReturnId()
         {
-            Client client = new Client(new MemoryRepository(), new CustomIterator());
+            var client = new Client(new MemoryRepository(new CustomIterator()), null, appDomainSetup);
             var user = new User("Alex", "Alex", DateTime.Now, 123, Gender.Male, null);
             Assert.AreEqual(typeof(int), client.Proxy.Add(user).GetType());
         }
@@ -51,7 +54,7 @@ namespace Tests
         [TestMethod]
         public void MasterServiceDeleteUser_CorrectUser()
         {
-            Client client = new Client(new MemoryRepository(), new CustomIterator());
+            var client = new Client(new MemoryRepository(new CustomIterator()), null, appDomainSetup);
             var user = new User("Alex", "Alex", DateTime.Now, 123, Gender.Male, null);
             var user1 = new User("Ben", "Larrson", DateTime.Now, 357, Gender.Male, null);
             client.Proxy.Add(user);
@@ -63,27 +66,27 @@ namespace Tests
         [ExpectedException(typeof(NotImplementedException))]
         public void SlaveServiceAddUser_CorrectUser_ReturnId()
         {
-            Client client = new Client(new MemoryRepository(), new CustomIterator());
+            var client = new Client(new MemoryRepository(new CustomIterator()), null, appDomainSetup);
             var user = new User("Alex", "Alex", DateTime.Now, 123, Gender.Male, null);
-            Assert.AreEqual(typeof(int), client.Proxy.Add(user).GetType());
+            Assert.AreEqual(typeof(int), client.Services[1].Add(user).GetType());
         }
 
         [TestMethod]
         [ExpectedException(typeof(NotImplementedException))]
         public void SlaveServiceDeleteUser_CorrectUser()
         {
-            Client client = new Client(new MemoryRepository(), new CustomIterator());
+            var client = new Client(new MemoryRepository(new CustomIterator()), null, appDomainSetup);
             var user = new User("Alex", "Alex", DateTime.Now, 123, Gender.Male, null);
             var user1 = new User("Ben", "Larrson", DateTime.Now, 357, Gender.Male, null);
             client.Proxy.Add(user);
             client.Proxy.Add(user1);
-            client.Proxy.Delete(1);
+            client.Services[1].Delete(1);
         }
 
         [TestMethod]
         public void MasterServiceSearchUser_ISearchCriteria_ReturnUserIds()
         {
-            Client client = new Client(new MemoryRepository(), new CustomIterator());
+            var client = new Client(new MemoryRepository(new CustomIterator()), null, appDomainSetup);
             var user = new User("Alex", "Alex", DateTime.Now, 123, Gender.Male, null);
             var user1 = new User("Ben", "Larrson", DateTime.Now, 357, Gender.Male, null);
             client.Proxy.Add(user);
@@ -94,7 +97,7 @@ namespace Tests
         [TestMethod]
         public void SlaveServiceSearchUser_ISearchCriteria_ReturnUserIds()
         {
-            Client client = new Client(new MemoryRepository(), new CustomIterator());
+            var client = new Client(new MemoryRepository(new CustomIterator()), null, appDomainSetup);
             var user = new User("Alex", "Alex", DateTime.Now, 123, Gender.Male, null);
             var user1 = new User("Ben", "Larrson", DateTime.Now, 357, Gender.Male, null);
             client.Proxy.Add(user);
@@ -105,7 +108,7 @@ namespace Tests
         [TestMethod]
         public void MasterServiceSearchUser_Predicate_ReturnUserIds()
         {
-            Client client = new Client(new MemoryRepository(), new CustomIterator());
+            var client = new Client(new MemoryRepository(new CustomIterator()), null, appDomainSetup);
             var user = new User("Alex", "Alex", DateTime.Now, 123, Gender.Male, null);
             var user1 = new User("Ben", "Larrson", DateTime.Now, 357, Gender.Male, null);
             client.Proxy.Add(user);

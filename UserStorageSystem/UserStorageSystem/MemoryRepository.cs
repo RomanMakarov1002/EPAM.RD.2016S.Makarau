@@ -14,10 +14,19 @@ namespace UserStorageSystem
         private Dictionary<int, User> _users = new Dictionary<int, User>();   
         private readonly IEnumerator<int> _enumerator = new CustomIterator();
 
-        public int Add(int id, User user)
+        public MemoryRepository(IEnumerator<int> enumerator)
         {
-            _users.Add(id, user);
-            return id;
+            if (enumerator != null)
+                _enumerator = enumerator;
+        }
+
+        public MemoryRepository() { }
+
+        public int Add(User user)
+        {
+            _enumerator.MoveNext();
+            _users.Add(_enumerator.Current, user);
+            return _enumerator.Current;
         }
 
         public void Delete(int id)
@@ -54,6 +63,7 @@ namespace UserStorageSystem
             var storedResults = (ServiceState)xmlSerializer.Deserialize(ms);
             _users = new Dictionary<int, User>(storedResults.Users.Count);
             file.Close();
+            _enumerator.Reset();
             foreach (var item in storedResults.Users)
             {
                 _enumerator.MoveNext();

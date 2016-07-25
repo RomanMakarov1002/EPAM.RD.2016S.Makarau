@@ -6,7 +6,7 @@ namespace UserStorageSystem
 {
     public interface IRepository : IEnumerable<User>
     {
-        int Add(int id, User user);
+        int Add(User user);
         IEnumerable<int> SearchForUser(ISearchCriteria searchCriteria);
         IEnumerable<int> SearchForUser(Predicate<User>[] criteria);
         void Delete(int id);

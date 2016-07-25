@@ -68,12 +68,18 @@ namespace UserStorageSystem
         {
             if (ReferenceEquals(null, user)) return false;
             if (ReferenceEquals(this, user)) return true;
-            return this.PersonalId == user.PersonalId;
+            return this.PersonalId == user.PersonalId && this.FirstName == user.FirstName && this.LastName == user.LastName && this.DateOfBirth == user.DateOfBirth;
         }
 
         public override int GetHashCode()
         {
-            return this.PersonalId;
+            unchecked 
+            {
+                int hash = this.PersonalId;
+                hash = hash * 23 + this.FirstName.GetHashCode();
+                hash = hash * 23 + this.LastName.GetHashCode();
+                return hash;
+            }
         }
 
         public override string ToString()

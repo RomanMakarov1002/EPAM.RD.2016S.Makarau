@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
-
 
 namespace UserStorageSystem
 {
@@ -18,16 +16,6 @@ namespace UserStorageSystem
             _services = services;
         }
 
-        public int AddUser(User user)
-        {
-            return _services[0].Add(user);
-        }
-
-        public void DeleteUser(int id)
-        {
-            _services[0].Delete(id);
-        }
-
         public IEnumerable<int> SearchForUser(ISearchCriteria searchCriteria)
         {
             return _services[new Random().Next(_servicesCount-1) + 1].SearchForUser(searchCriteria);
@@ -40,17 +28,17 @@ namespace UserStorageSystem
 
         public int Add(User user)
         {
-            throw new NotImplementedException();
+            return _services[0].Add(user);
         }
 
         public void Delete(int id)
         {
-            throw new NotImplementedException();
+            _services[0].Delete(id);
         }
 
         public void Save()
         {
-            throw new NotImplementedException();
+            _services[0].Save();
         }
 
         public void UpLoad()

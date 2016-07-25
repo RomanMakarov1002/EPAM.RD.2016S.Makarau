@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Policy;
 using System.Threading;
 
 
@@ -14,7 +15,6 @@ namespace UserStorageSystem
     public class MasterUserService :MarshalByRefObject, IService
     {
         public IRepository StorageType;
-        public IEnumerator<int> Enumerator = new CustomIterator();
         public int Status => 1;
         public event ModifyData ModifyData = delegate { };
         private static readonly TraceSource ts = new TraceSource("CustomSource");
@@ -23,25 +23,31 @@ namespace UserStorageSystem
         private List<NetworkStream> _networkStreams = new List<NetworkStream>();
         private List<TcpClient> _tcpClients = new List<TcpClient>(); 
 
-        private NetworkStream ns;
-        private TcpClient tcpClient;
-
-        public MasterUserService(IRepository storageType, IEnumerator<int> enumerator )
+        public MasterUserService(IRepository storageType )
         {
             StorageType = storageType;
-            Enumerator = enumerator;
         }
 
         public MasterUserService()
         {
         }
 
-        public IService CreateInstanceInNewDomain(string domainName, IRepository repositoryType, IEnumerator<int> enumerator, List<KeyValuePair<int, string>> defaultNetSettings)
+        public IService CreateInstanceInNewDomain(string domainName, IRepository repositoryType, List<KeyValuePair<int, string>> defaultNetSettings)
         {
             var result = (MasterUserService)
                 AppDomain.CreateDomain(domainName).CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName,
                     typeof (MasterUserService).FullName);
-            result.Enumerator = enumerator;
+            result.StorageType = repositoryType;
+            result.HostsAndPorts = defaultNetSettings;
+            return result;
+        }
+
+        public IService CreateInstanceInNewDomain(string domainName, AppDomainSetup domainSetup, IRepository repositoryType, List<KeyValuePair<int, string>> defaultNetSettings)
+        {
+            AppDomain app = AppDomain.CreateDomain(domainName, null, domainSetup);
+            var result = (MasterUserService)
+                app.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName,
+                    typeof(MasterUserService).FullName);
             result.StorageType = repositoryType;
             result.HostsAndPorts = defaultNetSettings;
             return result;
@@ -58,9 +64,7 @@ namespace UserStorageSystem
                     throw new ArgumentNullException();
                 if (!user.IsValid())
                     throw new ArgumentException("Validation error : Incorrect user entity");
-                Enumerator.MoveNext();
-                _id = Enumerator.Current;
-                StorageType.Add(_id, user);
+                _id = StorageType.Add(user);
                 OnModify(new Message("UserAdded", _id, user, null));
                 return _id;
             }
@@ -106,13 +110,18 @@ namespace UserStorageSystem
 
         public void UpLoad()
         {
-            ts.TraceInformation($"Upload request in MasterService at {DateTime.Now} in {AppDomain.CurrentDomain.FriendlyName}");
-            int id =StorageType.UpLoadFromXml();
-            while (Enumerator.Current != id)
+            object obj = new object();
+            Monitor.Enter(obj);
+            try
             {
-                Enumerator.MoveNext();
+                ts.TraceInformation($"Upload request in MasterService at {DateTime.Now} in {AppDomain.CurrentDomain.FriendlyName}");
+                int id = StorageType.UpLoadFromXml();
+                OnModify(new Message("UsersUploaded", 0, null, StorageType.ReturnData()));
             }
-            OnModify(new Message("UsersUploaded", 0, null, StorageType.ReturnData()));
+            finally
+            {
+                Monitor.Exit(obj);
+            }
         }
 
         public void ConnectMaster()

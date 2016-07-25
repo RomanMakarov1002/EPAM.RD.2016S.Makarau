@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace UserStorageSystem
 {
@@ -25,6 +26,17 @@ namespace UserStorageSystem
         {
             var result = (SlaveUserService) AppDomain.CreateDomain(domainName)
                 .CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof (SlaveUserService).FullName);
+            result.ServiceIp = netDefaults.Value;
+            result.ServicePort = netDefaults.Key;
+            result.StartSlave();
+            return result;
+        }
+
+        public SlaveUserService CreateSlaveServiceInNewDomain(string domainName, AppDomainSetup domainSetup, KeyValuePair<int, string> netDefaults)
+        {
+            AppDomain app = AppDomain.CreateDomain(domainName, null, domainSetup);
+            var result = (SlaveUserService)app
+                .CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof(SlaveUserService).FullName);
             result.ServiceIp = netDefaults.Value;
             result.ServicePort = netDefaults.Key;
             result.StartSlave();
@@ -91,6 +103,7 @@ namespace UserStorageSystem
                     UpdateData(msg.UsersContainer);
                 }
             }
+            _thread.Join();
         }
 
         private void UpdateData(Dictionary<int, User> tempDictionary)
