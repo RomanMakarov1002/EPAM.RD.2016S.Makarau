@@ -7,7 +7,6 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace UserStorageSystem
 {
@@ -47,6 +46,7 @@ namespace UserStorageSystem
         {
             _tcpListener = new TcpListener(IPAddress.Parse(ServiceIp), ServicePort);
             _thread = new Thread(SocketListener);
+            _thread.IsBackground = true;
             _thread.Start();
         }
 
@@ -81,29 +81,35 @@ namespace UserStorageSystem
 
         public void SocketListener()
         {
-            _tcpListener.Start();
-            TcpClient tcpClient = _tcpListener.AcceptTcpClient();
-            NetworkStream ns = tcpClient.GetStream();
-            var formatter = new BinaryFormatter();
-            while (true)
+            try
             {
-                Thread.Sleep(10);
-                //
-                Message msg = (Message)formatter.Deserialize(ns);
-                if (msg.MethodInfo == "UserAdded")
+                _tcpListener.Start();
+                TcpClient tcpClient = _tcpListener.AcceptTcpClient();
+                NetworkStream ns = tcpClient.GetStream();
+                var formatter = new BinaryFormatter();
+                while (true)
                 {
-                    UserAdded(msg.User, msg.Id);
-                }
-                if (msg.MethodInfo == "UserDeleted")
-                {
-                    UserDeleted(msg.Id);
-                }
-                if (msg.MethodInfo == "UsersUploaded")
-                {
-                    UpdateData(msg.UsersContainer);
+                    Thread.Sleep(10);
+                    //
+                    Message msg = (Message)formatter.Deserialize(ns);
+                    if (msg.MethodInfo == "UserAdded")
+                    {
+                        UserAdded(msg.User, msg.Id);
+                    }
+                    if (msg.MethodInfo == "UserDeleted")
+                    {
+                        UserDeleted(msg.Id);
+                    }
+                    if (msg.MethodInfo == "UsersUploaded")
+                    {
+                        UpdateData(msg.UsersContainer);
+                    }
                 }
             }
-            _thread.Join();
+            finally
+            {
+                _tcpListener?.Stop();
+            }
         }
 
         private void UpdateData(Dictionary<int, User> tempDictionary)

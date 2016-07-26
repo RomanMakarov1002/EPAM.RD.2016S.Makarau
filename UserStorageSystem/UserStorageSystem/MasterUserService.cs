@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Policy;
 using System.Threading;
 
 
@@ -20,8 +19,7 @@ namespace UserStorageSystem
         private static readonly TraceSource ts = new TraceSource("CustomSource");
         private int _id;
         private List<KeyValuePair<int, string>> HostsAndPorts {get; set; } 
-        private List<NetworkStream> _networkStreams = new List<NetworkStream>();
-        private List<TcpClient> _tcpClients = new List<TcpClient>(); 
+        private readonly List<NetworkStream> _networkStreams = new List<NetworkStream>();
 
         public MasterUserService(IRepository storageType )
         {
@@ -128,9 +126,7 @@ namespace UserStorageSystem
         {
             foreach (var item in HostsAndPorts)
             {
-                var client = new TcpClient(item.Value, item.Key);
-                _tcpClients.Add(new TcpClient(item.Value, item.Key));
-                _networkStreams.Add(client.GetStream());
+                _networkStreams.Add(new TcpClient(item.Value, item.Key).GetStream());
             }
         }
 
