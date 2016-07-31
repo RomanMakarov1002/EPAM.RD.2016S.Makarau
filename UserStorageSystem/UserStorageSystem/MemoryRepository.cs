@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
@@ -13,11 +12,14 @@ namespace UserStorageSystem
     {
         private Dictionary<int, User> _users = new Dictionary<int, User>();   
         private readonly IEnumerator<int> _enumerator = new CustomIterator();
+        private readonly string _xmlPath;
 
-        public MemoryRepository(IEnumerator<int> enumerator)
+        public MemoryRepository(IEnumerator<int> enumerator, string path)
         {
             if (enumerator != null)
                 _enumerator = enumerator;
+            if (path != null)
+                _xmlPath = path;
         }
 
         public MemoryRepository() { }
@@ -36,7 +38,7 @@ namespace UserStorageSystem
 
         public IEnumerable<int> SearchForUser(ISearchCriteria searchCriteria)
         {
-            return searchCriteria.Search(_users.AsEnumerable());
+            return searchCriteria.Search(_users);
         }
 
         public IEnumerable<int> SearchForUser(Predicate<User>[] criteria)
@@ -48,17 +50,17 @@ namespace UserStorageSystem
         {
             XmlSerializer xmlSerializer = new XmlSerializer(typeof(ServiceState));
 
-            TextWriter tw = new StreamWriter(ConfigurationManager.AppSettings["XmlFilePath"]);
-            xmlSerializer.Serialize(tw, new ServiceState() { GeneratedId = id,Users = _users.Values.ToList()});
+            TextWriter tw = new StreamWriter(_xmlPath);
+            xmlSerializer.Serialize(tw, new ServiceState() { GeneratedId = id, Users = _users.Values.ToList() });
             tw.Close();
         }
 
         public int UpLoadFromXml()
         {
             XmlSerializer xmlSerializer = new XmlSerializer(typeof(ServiceState));
-            FileStream file = new FileStream(Client.XmlPath, FileMode.Open);
+            FileStream file = new FileStream(_xmlPath, FileMode.Open);
             byte[] buffer = new byte[file.Length];
-            file.Read(buffer, 0, (int) file.Length);
+            file.Read(buffer, 0, (int)file.Length);
             MemoryStream ms = new MemoryStream(buffer);
             var storedResults = (ServiceState)xmlSerializer.Deserialize(ms);
             _users = new Dictionary<int, User>(storedResults.Users.Count);

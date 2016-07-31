@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Sockets;
+using System.ServiceModel;
+using System.ServiceModel.Description;
+using System.Text;
 using System.Threading;
+using System.Xml;
 using UserStorageSystem;
 
 
@@ -13,6 +18,30 @@ namespace ConsoleApplication1
         
         public static void Main(string[] args)
         {
+            //Client client = new Client();
+
+            //using (ServiceHost host = new ServiceHost(client, new Uri("http://localhost:8080/")))
+            //{
+            //    // Enable metadata publishing.
+            //    ServiceMetadataBehavior smb = new ServiceMetadataBehavior();
+            //    smb.HttpGetEnabled = true;
+            //    smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15;
+            //    host.Description.Behaviors.Add(smb);
+
+            //    // Open the ServiceHost to start listening for messages. Since
+            //    // no endpoints are explicitly configured, the runtime will create
+            //    // one endpoint per base address for each service contract implemented
+            //    // by the service.
+            //    host.Open();
+
+            //    Console.WriteLine("The service is ready at {0}", new Uri("http://localhost:8080/"));
+            //    Console.WriteLine("Press <Enter> to stop the service.");
+            //    Console.ReadLine();
+
+            //    // Close the ServiceHost.
+            //    host.Close();
+            //}
+
 
             Console.WriteLine("Press any key to run ordinary check");
             Console.ReadKey();
@@ -21,12 +50,12 @@ namespace ConsoleApplication1
 
             Console.ReadKey();
 
-            Thread thread = new Thread(new ThreadStart(CheckWithMultiThreading));
-            thread.Start();
-            Console.ReadKey();
-            cts.Cancel();
-            thread.Join();
-            Console.WriteLine("Bingo!");
+            //Thread thread = new Thread(new ThreadStart(CheckWithMultiThreading));
+            //thread.Start();
+            //Console.ReadKey();
+            //cts.Cancel();
+            //thread.Join();
+            //Console.WriteLine("Bingo!");
         }
 
         public static void OrdinaryWorkCheck()
@@ -36,13 +65,11 @@ namespace ConsoleApplication1
             User user1 = new User("Aaron", "Ramsey", DateTime.Now, 123, Gender.Male, new Visa[] { visa });
             User user2 = new User("Jack", "Ramsey", DateTime.Now, 123, Gender.Male, new Visa[] { visa });
             User user3 = new User("Matheu", "Ramsey", DateTime.Now, 123, Gender.Male, new Visa[] { visa });
-
-            Client client2 = new Client(new MemoryRepository(new CustomIterator()));
+            Client client2 = new Client();
             client2.Proxy.Add(user);
             client2.Proxy.Add(user1);
             client2.Proxy.Add(user2);
             client2.Proxy.Add(user3);
-
             client2.Services[0].Save();
 
             client2.Services[0].UpLoad();
@@ -72,13 +99,15 @@ namespace ConsoleApplication1
             client2.Proxy.Delete(1);
             Console.WriteLine(client2.Proxy.SearchForUser(new SearchByFirstName("Aaro")).Count());
 
+
+
             Console.WriteLine("done");
         }
 
 
         public static void CheckWithMultiThreading()
         {
-            var client3 = new Client(new MemoryRepository());
+            var client3 = new Client();
             Visa visa = new Visa("Monaco", DateTime.Now, DateTime.Now);
             User user = new User("Aaro", "Ramsey", DateTime.Now, 123, Gender.Female, new Visa[] { visa });
             Action[] masterCalls = new Action[5];

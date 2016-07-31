@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace UserStorageSystem
 {
@@ -19,7 +21,6 @@ namespace UserStorageSystem
         private string ServiceIp { get; set; }
         private int ServicePort { get; set; }
         private TcpListener _tcpListener;
-        private Thread _thread;
 
         public SlaveUserService CreateSlaveServiceInNewDomain(string domainName, KeyValuePair<int, string> netDefaults)
         {
@@ -45,9 +46,7 @@ namespace UserStorageSystem
         public void StartSlave()
         {
             _tcpListener = new TcpListener(IPAddress.Parse(ServiceIp), ServicePort);
-            _thread = new Thread(SocketListener);
-            _thread.IsBackground = true;
-            _thread.Start();
+            SocketListener();
         }
 
 
@@ -71,7 +70,7 @@ namespace UserStorageSystem
             try
             {
                 ts.TraceInformation($"SearchForUser request in SlaveService at {DateTime.Now} in {AppDomain.CurrentDomain.FriendlyName}");
-                return searchCriteria.Search(_tempData.AsEnumerable());
+                return searchCriteria.Search(_tempData);
             }
             finally
             {
@@ -81,35 +80,36 @@ namespace UserStorageSystem
 
         public void SocketListener()
         {
-            try
+            ThreadPool.QueueUserWorkItem(async (x) =>
             {
                 _tcpListener.Start();
-                TcpClient tcpClient = _tcpListener.AcceptTcpClient();
-                NetworkStream ns = tcpClient.GetStream();
-                var formatter = new BinaryFormatter();
                 while (true)
                 {
-                    Thread.Sleep(10);
-                    //
-                    Message msg = (Message)formatter.Deserialize(ns);
-                    if (msg.MethodInfo == "UserAdded")
+                    TcpClient tcpClient = null;
+                    try
                     {
-                        UserAdded(msg.User, msg.Id);
+                        tcpClient = await _tcpListener.AcceptTcpClientAsync();
+                        NetworkStream ns = tcpClient.GetStream();
+                        var msg = await ReadMessage(ns);
+                        if (msg.MethodInfo == "UserAdded")
+                        {
+                            UserAdded(msg.User, msg.Id);
+                        }
+                        if (msg.MethodInfo == "UserDeleted")
+                        {
+                            UserDeleted(msg.Id);
+                        }
+                        if (msg.MethodInfo == "UsersUploaded")
+                        {
+                            UpdateData(msg.UsersContainer);
+                        }
                     }
-                    if (msg.MethodInfo == "UserDeleted")
+                    finally
                     {
-                        UserDeleted(msg.Id);
-                    }
-                    if (msg.MethodInfo == "UsersUploaded")
-                    {
-                        UpdateData(msg.UsersContainer);
+                        tcpClient?.Close();
                     }
                 }
-            }
-            finally
-            {
-                _tcpListener?.Stop();
-            }
+            });
         }
 
         private void UpdateData(Dictionary<int, User> tempDictionary)
@@ -131,7 +131,8 @@ namespace UserStorageSystem
             rwls.EnterWriteLock();
             try
             {
-                _tempData.Add(id, user);
+                Console.WriteLine($"Added user in{AppDomain.CurrentDomain.FriendlyName}");
+                _tempData.Add(id,user);
             }
             finally
             {
@@ -150,6 +151,12 @@ namespace UserStorageSystem
             {
                 rwls.ExitWriteLock();
             }
+        }
+
+        private Task<Message> ReadMessage(Stream stream)
+        {
+            var formatter = new BinaryFormatter();
+            return Task.FromResult(formatter.Deserialize(stream) as Message);
         }
 
         public int Add(User user)

@@ -11,15 +11,13 @@ namespace UserStorageSystem
 {
     public delegate void ModifyData(Message msg);
 
-    public class MasterUserService :MarshalByRefObject, IService
-    {
+    public class MasterUserService :MarshalByRefObject, IService   {
         public IRepository StorageType;
         public int Status => 1;
         public event ModifyData ModifyData = delegate { };
-        private static readonly TraceSource ts = new TraceSource("CustomSource");
+        private readonly TraceSource ts = new TraceSource("CustomSource");
         private int _id;
         private List<KeyValuePair<int, string>> HostsAndPorts {get; set; } 
-        private readonly List<NetworkStream> _networkStreams = new List<NetworkStream>();
 
         public MasterUserService(IRepository storageType )
         {
@@ -122,25 +120,25 @@ namespace UserStorageSystem
             }
         }
 
-        public void ConnectMaster()
-        {
-            foreach (var item in HostsAndPorts)
-            {
-                _networkStreams.Add(new TcpClient(item.Value, item.Key).GetStream());
-            }
-        }
-
-        public void OnModify(Message msg)
+        private async void OnModify(Message msg)
         {
             BinaryFormatter bf = new BinaryFormatter();
-            foreach (var item in _networkStreams)
+            TcpClient client; 
+            foreach (var item in HostsAndPorts)
             {
-                if (item.CanWrite)
+                client = new TcpClient();
+                await client.ConnectAsync(item.Value, item.Key);
+
+                using (var networkStream = client.GetStream())
                 {
-                    bf.Serialize(item, msg);
+                    if (networkStream.CanWrite)
+                        bf.Serialize(networkStream, msg);
+                }
+                if (client != null)
+                {
+                    client.Close();
                 }
             }
-            ModifyData(msg);
         }
     }
 }

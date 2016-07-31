@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace UserStorageSystem
+﻿namespace UserStorageSystem
 {
     public interface IValidation<T>
     {

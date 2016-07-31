@@ -9,6 +9,7 @@ namespace UserStorageSystem
         public int Status => 0;
         private readonly int _servicesCount;
         private readonly List<IService> _services;
+        private int _current = 0;
 
         public Proxy (int n, List<IService> services)
         {
@@ -18,12 +19,15 @@ namespace UserStorageSystem
 
         public IEnumerable<int> SearchForUser(ISearchCriteria searchCriteria)
         {
-            return _services[new Random().Next(_servicesCount-1) + 1].SearchForUser(searchCriteria);
+            _current = ++_current%_servicesCount;
+            return _services[_current].SearchForUser(searchCriteria);
+            
         }
 
         public IEnumerable<int> SearchForUser(Predicate<User>[] searchCriteria)
         {
-            return _services[new Random().Next(_servicesCount-1) +1].SearchForUser(searchCriteria);
+            _current = ++_current % _servicesCount;
+            return _services[_current].SearchForUser(searchCriteria);
         }
 
         public int Add(User user)
@@ -44,6 +48,11 @@ namespace UserStorageSystem
         public void UpLoad()
         {
              _services[0].UpLoad();
+        }
+
+        public IEnumerable<int> SearchForUser(params ISearchCriteria[] searchCriterias)
+        {
+            throw new NotImplementedException();
         }
     }
 }

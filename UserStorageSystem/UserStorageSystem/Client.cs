@@ -1,61 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Configuration;
+﻿using System.Collections.Generic;
 
 namespace UserStorageSystem
 {
-    [Serializable]
     public class Client 
-    { 
-        public List<IService> Services { get; } = new List<IService>();     //for direct calls to services by threads (last point from task)
-        public Proxy Proxy;                                                 // for ordinary usage
-        public static string XmlPath { get; set; } = ConfigurationManager.AppSettings["XmlFilePath"];
-        private readonly int _defaultServicesCount = 
-            Convert.ToInt32(
-                ((NameValueCollection) ConfigurationManager.GetSection("ClientDefaults"))["NumberOfInstances"]);
+    {
+        public List<IService> Services = new List<IService>();      //for direct calls to services by threads (last point from task)
+        public Proxy Proxy;                                         // for ordinary usage
+        public string XmlFilePath;
+        public List<KeyValuePair<int, string>> ConnectionSettings = new List<KeyValuePair<int, string>>();
 
-        private List<KeyValuePair<int, string>> _defaultNetSettings= new List<KeyValuePair<int, string>>();
-     
-        public Client(IRepository storageType,  int? n = null, AppDomainSetup domainSetup = null)
+        public Client()
         {
-            if (storageType == null )
-                throw new ArgumentNullException();
-            if (n == null)
-                n = _defaultServicesCount;
-            for (int i=0; i<n-1; i++)
+            Configurate();
+            Proxy = new Proxy(Services.Count, Services);
+        }
+
+        private void Configurate()
+        {
+            ConfigurateConnections();
+            ConfigurateFilePaths();
+            var servicesConfiguration = ServiceConfiguration.GetConfiguration();
+            int i = 0;
+            foreach (var service in servicesConfiguration.Services)
             {
-                int port = Convert.ToInt32(
-                ((NameValueCollection)ConfigurationManager.GetSection("ClientDefaults"))["ServicePort"+i]);
-                string ip =
-                    ((NameValueCollection) ConfigurationManager.GetSection("ClientDefaults"))["ServiceIp"+i];
-                _defaultNetSettings.Add(new KeyValuePair<int, string>(port,ip));
-            }
-            for (int i = 0; i < n; i++)
-            {
-                if (i == 0)
+                var newService = (Services)service;
+                if (newService.Type == "MasterUserService")
                 {
-                    if (domainSetup == null)
-                        Services.Add(new MasterUserService().CreateInstanceInNewDomain("MasterServiceDomain"+i, storageType, _defaultNetSettings));
-                    else
-                    {
-                        Services.Add(new MasterUserService().CreateInstanceInNewDomain("MasterServiceDomain" + i, domainSetup, storageType, _defaultNetSettings));
-                    }
+                    IRepository repository = new MemoryRepository();
+                    IEnumerator<int> iterator = new CustomIterator();
+                    if (newService.Iterator == "CustomFibonacci")
+                        iterator = new CustomIterator();
+                    if (newService.Repository == "MemoryRepository")
+                        repository = new MemoryRepository(iterator, XmlFilePath);
+                    Services.Add(new MasterUserService().CreateInstanceInNewDomain(newService.DomainName, repository,
+                        ConnectionSettings));
                 }
                 else
                 {
-                    if (domainSetup == null)
-                        Services.Add(new SlaveUserService().CreateSlaveServiceInNewDomain("SlaveServiceDomain" + i,
-                            _defaultNetSettings[i - 1]));
-                    else
-                    {
-                        Services.Add(new SlaveUserService().CreateSlaveServiceInNewDomain("SlaveServiceDomain" + i,
-                          domainSetup, _defaultNetSettings[i - 1]));
-                    }
+                    Services.Add(new SlaveUserService().CreateSlaveServiceInNewDomain(newService.DomainName, ConnectionSettings[i]));
+                    i++;
                 }
             }
-            ((MasterUserService)Services[0]).ConnectMaster();
-            Proxy = new Proxy(n.Value, Services);
+        }
+
+        private void ConfigurateConnections()
+        {
+            var connectionConfiguration = ConnectionsConfiguration.GetConfiguration();
+            foreach (var connection in connectionConfiguration.Connections)
+            {
+                var newConnection = (Connections)connection;
+                ConnectionSettings.Add(new KeyValuePair<int, string>(newConnection.Port, newConnection.Ip));
+            }
+        }
+
+        private void ConfigurateFilePaths()
+        {
+            var filePaths = FilePathsConfigurator.GetConfiguration();
+            XmlFilePath = filePaths.FilePaths[0].Path;
         }
     }
 }
+
