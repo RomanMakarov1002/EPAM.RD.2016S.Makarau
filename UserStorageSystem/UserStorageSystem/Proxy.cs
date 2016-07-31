@@ -52,7 +52,21 @@ namespace UserStorageSystem
 
         public IEnumerable<int> SearchForUser(params ISearchCriteria[] searchCriterias)
         {
-            throw new NotImplementedException();
+            _current = ++_current % _servicesCount;
+            var user = new User();
+            foreach (var item in searchCriterias)
+            {
+                Type type = item.GetType();
+                if (type == typeof (SearchByFirstName))
+                    user.FirstName = ((SearchByFirstName) item).SearchTerm;
+                if (type == typeof (SearchByGender))
+                    user.Gender = ((SearchByGender) item).SearchTerm;
+
+            }
+            return _services[_current].SearchForUser(new Predicate<User>[]
+            {
+                (User x) => x.FirstName == user.FirstName && x.Gender == user.Gender
+            });
         }
     }
 }

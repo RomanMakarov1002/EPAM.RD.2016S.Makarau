@@ -8,48 +8,48 @@ namespace UserStorageSystem
     [Serializable]
     public class SearchById : ISearchCriteria
     {
-        private readonly int _searchTerm;
+        public readonly int SearchTerm;
 
         public SearchById(int searchTerm)
         {
-            _searchTerm = searchTerm;
+            SearchTerm = searchTerm;
         }
 
         public List<int> Search(IEnumerable<KeyValuePair<int, User>> enumerable)
         {
-            return enumerable.Where(x => x.Key == _searchTerm).Select(x => x.Key).ToList();
+            return enumerable.Where(x => x.Key == SearchTerm).Select(x => x.Key).ToList();
         }
     }
 
     [Serializable]
     public class SearchByFirstName : ISearchCriteria
     {
-        private readonly string _searchTerm;
+        public readonly string SearchTerm;
 
         public SearchByFirstName(string searchTerm)
         {
-            _searchTerm = searchTerm;
+            SearchTerm = searchTerm;
         }
 
         public List<int> Search(IEnumerable<KeyValuePair<int, User>> enumerable)
         {
-            return enumerable.Where(x => x.Value.FirstName == _searchTerm).Select(x => x.Key).ToList();
+            return enumerable.Where(x => x.Value.FirstName == SearchTerm).Select(x => x.Key).ToList();
         }
     }
 
     [Serializable]
     public class SearchByGender : ISearchCriteria
     {
-        private readonly Gender _searchTerm;
+        public readonly Gender SearchTerm;
 
         public SearchByGender(Gender searchTerm)
         {
-            _searchTerm = searchTerm;
+            SearchTerm = searchTerm;
         }
 
         public List<int> Search(IEnumerable<KeyValuePair<int, User>> enumerable)
         {
-            return enumerable.Where(x => x.Value.Gender == _searchTerm).Select(x => x.Key).ToList();
+            return enumerable.Where(x => x.Value.Gender == SearchTerm).Select(x => x.Key).ToList();
         }
     }
 }
