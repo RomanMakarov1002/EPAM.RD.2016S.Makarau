@@ -66,6 +66,16 @@ namespace UserStorageSystem.Services
             }
         }
 
+        public IEnumerable<int> SearchForUser(ISearchCriteria[] searchCriterias)
+        {
+            List<int> result = searchCriterias[0].Search(_tempData).ToList();
+            for (int i = 1; i < searchCriterias.Length; i++)
+            {
+                result = result.Intersect(searchCriterias[i].Search(_tempData)).ToList();
+            }
+            return result;
+        }
+
         public IEnumerable<int> SearchForUser(ISearchCriteria searchCriteria)
         {
             rwls.EnterReadLock();
@@ -181,22 +191,6 @@ namespace UserStorageSystem.Services
             throw new NotImplementedException();
         }
 
-        public IEnumerable<int> SearchForUser(ISearchCriteria[] searchCriterias)
-        {
-            var user = new User();
-            foreach (var item in searchCriterias)
-            {
-                Type type = item.GetType();
-                if (type == typeof(SearchByFirstName))
-                    user.FirstName = ((SearchByFirstName)item).SearchTerm;
-                if (type == typeof(SearchByGender))
-                    user.Gender = ((SearchByGender)item).SearchTerm;
-
-            }
-            return SearchForUser(new Predicate<User>[]
-            {
-                (User x) => x.FirstName == user.FirstName && x.Gender == user.Gender
-            });
-        }
+        
     }
 }

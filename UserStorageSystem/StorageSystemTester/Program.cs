@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Sockets;
-using System.ServiceModel;
 using System.Threading;
 using UserStorageSystem;
 using UserStorageSystem.Entities;
@@ -21,10 +19,14 @@ namespace StorageSystemTester
             Visa visa = new Visa("Monaco", DateTime.Now, DateTime.Now);
             User user1 = new User("Aaron", "Ramsey", DateTime.Now, 123, Gender.Male, new Visa[] { visa });
             service.Add(user1);
-
             Console.ReadKey();
+
             //Console.WriteLine("Press any key to run ordinary check");
-            //Console.ReaSer
+            //Console.ReadKey();
+            //OrdinaryWorkCheck();
+            //Console.WriteLine("Press any key to run multithreading check");
+
+            //Console.ReadKey();
 
             //Thread thread = new Thread(new ThreadStart(CheckWithMultiThreading));
             //thread.Start();
@@ -78,7 +80,7 @@ namespace StorageSystemTester
             client2.Proxy.Delete(1);
             Console.WriteLine(client2.Proxy.SearchForUser(new SearchByFirstName("Aaro")).Count());
 
-            Console.WriteLine(client2.Proxy.SearchForUser(new SearchByFirstName("Aaro"), new SearchByGender(Gender.Male)));
+            Console.WriteLine(client2.Proxy.SearchForUser(new SearchByFirstName("Aaron"), new SearchByGender(Gender.Male)).Count());
 
 
             Console.WriteLine("done");

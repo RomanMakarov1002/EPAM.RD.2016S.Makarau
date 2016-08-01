@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -101,6 +102,16 @@ namespace UserStorageSystem.Services
             return StorageType.SearchForUser(criteria);
         }
 
+        public IEnumerable<int> SearchForUser(ISearchCriteria[] searchCriterias)
+        {
+            List<int> result = StorageType.SearchForUser(searchCriterias[0]).ToList();
+            for (int i = 1; i < searchCriterias.Length; i++)
+            {
+                result = result.Intersect(StorageType.SearchForUser(searchCriterias[i])).ToList();
+            }
+            return result;
+        }
+
         public void Save()
         {
             ts.TraceInformation($"Save request in MasterService at {DateTime.Now} in {AppDomain.CurrentDomain.FriendlyName}");
@@ -144,23 +155,6 @@ namespace UserStorageSystem.Services
             }
         }
 
-        public IEnumerable<int> SearchForUser(ISearchCriteria[] searchCriterias)
-        {
-            var user = new User();
-            foreach (var item in searchCriterias)
-            {
-                Type type = item.GetType();
-                if (type == typeof(SearchByFirstName))
-                    user.FirstName = ((SearchByFirstName)item).SearchTerm;
-                if (type == typeof(SearchByGender))
-                    user.Gender = ((SearchByGender)item).SearchTerm;
-
-            }
-            return SearchForUser(new Predicate<User>[]
-            {
-                (User x) => x.FirstName == user.FirstName && x.Gender == user.Gender
-            });
-        }
-
+        
     }
 }

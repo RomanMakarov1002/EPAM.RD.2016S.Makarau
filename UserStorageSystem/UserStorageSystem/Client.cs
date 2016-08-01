@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UserStorageSystem.Configuration;
 using UserStorageSystem.Repository;
 using UserStorageSystem.Services;
@@ -18,7 +19,15 @@ namespace UserStorageSystem
             Proxy = new Proxy(Services.Count, Services);
         }
 
-        private void Configurate()
+        public Client(AppDomainSetup domainSetup)
+        {
+            if (domainSetup == null)
+                throw new ArgumentNullException();
+            Configurate(domainSetup);
+            Proxy = new Proxy(Services.Count, Services);
+        }
+
+        private void Configurate(AppDomainSetup setup = null)
         {
             ConfigurateConnections();
             ConfigurateFilePaths();
@@ -35,13 +44,31 @@ namespace UserStorageSystem
                         iterator = new CustomIterator();
                     if (newService.Repository == "MemoryRepository")
                         repository = new MemoryRepository(iterator, XmlFilePath);
-                    Services.Add(new MasterUserService().CreateInstanceInNewDomain(newService.DomainName, repository,
+                    if (setup != null)
+                    {
+                        Services.Add(new MasterUserService().CreateInstanceInNewDomain(newService.DomainName, setup,
+                            repository,
+                            ConnectionSettings));
+                    }
+                    else
+                    {
+                        Services.Add(new MasterUserService().CreateInstanceInNewDomain(newService.DomainName, repository,
                         ConnectionSettings));
+                    }
+                    
                 }
                 else
                 {
-                    Services.Add(new SlaveUserService().CreateSlaveServiceInNewDomain(newService.DomainName, ConnectionSettings[i]));
-                    i++;
+                    if (setup != null)
+                    {
+                        Services.Add(new SlaveUserService().CreateSlaveServiceInNewDomain(newService.DomainName, setup, ConnectionSettings[i]));
+                        i++;
+                    }
+                    else
+                    {
+                        Services.Add(new SlaveUserService().CreateSlaveServiceInNewDomain(newService.DomainName, ConnectionSettings[i]));
+                        i++;
+                    }
                 }
             }
         }
