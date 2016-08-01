@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using UserStorageSystem.Configuration;
+using UserStorageSystem.Repository;
+using UserStorageSystem.Services;
 
 namespace UserStorageSystem
 {
@@ -23,7 +26,7 @@ namespace UserStorageSystem
             int i = 0;
             foreach (var service in servicesConfiguration.Services)
             {
-                var newService = (Services)service;
+                var newService = (Configuration.Services)service;
                 if (newService.Type == "MasterUserService")
                 {
                     IRepository repository = new MemoryRepository();

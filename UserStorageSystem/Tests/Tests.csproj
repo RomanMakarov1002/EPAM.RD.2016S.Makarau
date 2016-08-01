@@ -54,10 +54,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConsoleApplication1\ConsoleApplication1.csproj">
-      <Project>{9d276789-fdde-4aa4-a5bd-afde433f070e}</Project>
-      <Name>ConsoleApplication1</Name>
-    </ProjectReference>
     <ProjectReference Include="..\UserStorageSystem\UserStorageSystem.csproj">
       <Project>{c733fe07-36b8-4aa1-b499-089b34f30414}</Project>
       <Name>UserStorageSystem</Name>

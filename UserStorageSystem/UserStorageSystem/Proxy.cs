@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using UserStorageSystem.Entities;
+using UserStorageSystem.SearchCriterias;
+using UserStorageSystem.Services;
 
 namespace UserStorageSystem
 {
@@ -53,20 +56,8 @@ namespace UserStorageSystem
         public IEnumerable<int> SearchForUser(params ISearchCriteria[] searchCriterias)
         {
             _current = ++_current % _servicesCount;
-            var user = new User();
-            foreach (var item in searchCriterias)
-            {
-                Type type = item.GetType();
-                if (type == typeof (SearchByFirstName))
-                    user.FirstName = ((SearchByFirstName) item).SearchTerm;
-                if (type == typeof (SearchByGender))
-                    user.Gender = ((SearchByGender) item).SearchTerm;
-
-            }
-            return _services[_current].SearchForUser(new Predicate<User>[]
-            {
-                (User x) => x.FirstName == user.FirstName && x.Gender == user.Gender
-            });
+            return _services[_current].SearchForUser(searchCriterias);
+ 
         }
     }
 }

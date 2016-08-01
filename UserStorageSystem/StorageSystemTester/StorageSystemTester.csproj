@@ -4,15 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C733FE07-36B8-4AA1-B499-089B34F30414}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{98B4189E-2C7A-4B35-AE2D-5E303AC94502}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UserStorageSystem</RootNamespace>
-    <AssemblyName>UserStorageSystem</AssemblyName>
+    <RootNamespace>StorageSystemTester</RootNamespace>
+    <AssemblyName>StorageSystemTester</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -29,17 +32,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>mykey.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -49,39 +45,54 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client.cs" />
-    <Compile Include="Configuration\Connections.cs" />
-    <Compile Include="Configuration\ConnectionsCollection.cs" />
-    <Compile Include="Configuration\ConnectionsConfiguration.cs" />
-    <Compile Include="Configuration\FilePath.cs" />
-    <Compile Include="Configuration\FilePathCollection.cs" />
-    <Compile Include="Configuration\FilePathsConfigurator.cs" />
-    <Compile Include="Configuration\ServiceConfiguration.cs" />
-    <Compile Include="Configuration\Services.cs" />
-    <Compile Include="Configuration\ServicesCollection.cs" />
-    <Compile Include="CustomIterator.cs" />
-    <Compile Include="Entities\Gender.cs" />
-    <Compile Include="Entities\ServiceState.cs" />
-    <Compile Include="Entities\User.cs" />
-    <Compile Include="Entities\Visa.cs" />
-    <Compile Include="IValidation.cs" />
-    <Compile Include="Message.cs" />
-    <Compile Include="Proxy.cs" />
-    <Compile Include="Repository\IRepository.cs" />
-    <Compile Include="Repository\MemoryRepository.cs" />
-    <Compile Include="SearchCriterias\ISearchCriteria.cs" />
-    <Compile Include="SearchCriterias\SearchByFirstName.cs" />
-    <Compile Include="SearchCriterias\SearchByGender.cs" />
-    <Compile Include="SearchCriterias\SearchById.cs" />
-    <Compile Include="Services\IService.cs" />
-    <Compile Include="Services\MasterUserService.cs" />
-    <Compile Include="Services\SlaveUserService.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Service References\ServiceReference\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="mykey.snk" />
+    <None Include="App.config" />
+    <None Include="Service References\ServiceReference\Arrays.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\ServiceReference\service.wsdl" />
+    <None Include="Service References\ServiceReference\service.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\ServiceReference\service1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\ServiceReference\UserStorageSystem.Entities.xsd">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\UserStorageSystem\UserStorageSystem.csproj">
+      <Project>{c733fe07-36b8-4aa1-b499-089b34f30414}</Project>
+      <Name>UserStorageSystem</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\ServiceReference\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\ServiceReference\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\ServiceReference\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\ServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
