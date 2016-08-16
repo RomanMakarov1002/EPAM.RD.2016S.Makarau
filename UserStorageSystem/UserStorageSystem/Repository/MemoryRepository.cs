@@ -9,6 +9,9 @@ using UserStorageSystem.SearchCriterias;
 
 namespace UserStorageSystem.Repository
 {
+    /// <summary>
+    /// MemoryRepository class that provides Add/Delete/Search/Upload/Save methods and store data in dictionary
+    /// </summary>
     [Serializable]
     public class MemoryRepository : IRepository
     {
@@ -16,6 +19,11 @@ namespace UserStorageSystem.Repository
         private readonly IEnumerator<int> _enumerator = new CustomIterator();
         private readonly string _xmlPath;
 
+        /// <summary>
+        /// Parametrized constructor
+        /// </summary>
+        /// <param name="enumerator">enumerator that generates id for users(Fibonacci enumerator by default)</param>
+        /// <param name="path">file path</param>
         public MemoryRepository(IEnumerator<int> enumerator, string path)
         {
             if (enumerator != null)
@@ -26,28 +34,53 @@ namespace UserStorageSystem.Repository
 
         public MemoryRepository() { }
 
+        /// <summary>
+        /// Adds user to repository
+        /// </summary>
+        /// <param name="user"></param>
         public int Add(User user)
         {
+            if (user == null)
+                throw new ArgumentNullException();
             _enumerator.MoveNext();
             _users.Add(_enumerator.Current, user);
             return _enumerator.Current;
         }
 
+        /// <summary>
+        /// Delete user from repository according user's id
+        /// </summary>
+        /// <param name="id">User's id</param>
         public void Delete(int id)
         {
             _users.Remove(id);
         }
 
+        /// <summary>
+        /// Search users from repository according searchCriteria
+        /// </summary>
+        /// <param name="searchCriteria"> interface search criterias</param>
         public IEnumerable<int> SearchForUser(ISearchCriteria searchCriteria)
         {
+            if (searchCriteria == null)
+                throw new ArgumentNullException();
             return searchCriteria.Search(_users);
         }
 
+        /// <summary>
+        /// Search users from repository according searchCriteria
+        /// </summary>
+        /// <param name="criteria">array of predicate search criterias</param>
         public IEnumerable<int> SearchForUser(Predicate<User>[] criteria)
         {
+            if (criteria == null)
+                throw new ArgumentNullException();
             return _users.Where(x => criteria.All(e => e.Invoke(x.Value))).Select(x => x.Key);
         }
 
+        /// <summary>
+        /// Save repository to remote file
+        /// </summary>
         public void SaveToXml(int id)
         {
             XmlSerializer xmlSerializer = new XmlSerializer(typeof(ServiceState));
@@ -57,6 +90,9 @@ namespace UserStorageSystem.Repository
             tw.Close();
         }
 
+        /// <summary>
+        /// Upload repository from remote file
+        /// </summary>
         public int UpLoadFromXml()
         {
             XmlSerializer xmlSerializer = new XmlSerializer(typeof(ServiceState));

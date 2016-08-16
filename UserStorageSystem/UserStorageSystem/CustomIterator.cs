@@ -5,10 +5,12 @@ using System.Collections.Generic;
 
 namespace UserStorageSystem
 {
+    /// <summary>
+    /// Custom Fibonacci sequence iterator
+    /// </summary>
     [Serializable]
     public class CustomIterator : IEnumerator<int>
     {
-        //private int _firstNum=-1;
         private int _firstNum = 0;
         private int _secondNum = 1;
         private int _current;
@@ -51,7 +53,6 @@ namespace UserStorageSystem
 
         public void Reset()
         {
-            //_firstNum = -1;
             _firstNum = 0;
             _secondNum = 1;
         }

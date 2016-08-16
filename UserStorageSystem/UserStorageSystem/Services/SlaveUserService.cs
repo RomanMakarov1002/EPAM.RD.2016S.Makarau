@@ -14,6 +14,9 @@ using UserStorageSystem.SearchCriterias;
 
 namespace UserStorageSystem.Services
 {
+    /// <summary>
+    /// SlaveUserService class that provides Search methods
+    /// </summary>
     public class SlaveUserService : MarshalByRefObject, IService
     {
         public int Status => 2;
@@ -24,8 +27,19 @@ namespace UserStorageSystem.Services
         private int ServicePort { get; set; }
         private TcpListener _tcpListener;
 
+
+        /// <summary>
+        /// Creates slave service in new domain
+        /// </summary>
+        /// <param name="domainName">domain name</param>
+        /// <param name="netDefaults">default ports and ip adresses</param>
         public SlaveUserService CreateSlaveServiceInNewDomain(string domainName, KeyValuePair<int, string> netDefaults)
         {
+            if (domainName == null)
+            {
+                ts.TraceInformation($"Argument null exception during slave service creation in {AppDomain.CurrentDomain.FriendlyName}");
+                throw new ArgumentNullException();
+            }
             var result = (SlaveUserService)AppDomain.CreateDomain(domainName)
                 .CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof(SlaveUserService).FullName);
             result.ServiceIp = netDefaults.Value;
@@ -34,8 +48,19 @@ namespace UserStorageSystem.Services
             return result;
         }
 
+        /// <summary>
+        /// Creates slave service in new domain
+        /// </summary>
+        /// <param name="domainName">domain name</param>
+        /// <param name="domainSetup">domain setup</param>
+        /// <param name="netDefaults">default ports and ip adresses</param>
         public SlaveUserService CreateSlaveServiceInNewDomain(string domainName, AppDomainSetup domainSetup, KeyValuePair<int, string> netDefaults)
         {
+            if (domainName == null)
+            {
+                ts.TraceInformation($"Argument null exception during slave service creation in {AppDomain.CurrentDomain.FriendlyName}");
+                throw new ArgumentNullException();
+            }
             AppDomain app = AppDomain.CreateDomain(domainName, null, domainSetup);
             var result = (SlaveUserService)app
                 .CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof(SlaveUserService).FullName);
@@ -45,15 +70,17 @@ namespace UserStorageSystem.Services
             return result;
         }
 
-        public void StartSlave()
-        {
-            _tcpListener = new TcpListener(IPAddress.Parse(ServiceIp), ServicePort);
-            SocketListener();
-        }
-
-
+        /// <summary>
+        /// Search users by predicates
+        /// </summary>
+        /// <param name="criteria">array of predicate search criterias</param>
         public IEnumerable<int> SearchForUser(Predicate<User>[] criteria)
         {
+            if (criteria == null)
+            {
+                ts.TraceInformation($"Argument null exception in search request at slave in {AppDomain.CurrentDomain.FriendlyName}");
+                throw new ArgumentNullException();
+            }
             rwls.EnterReadLock();
             try
             {
@@ -66,18 +93,44 @@ namespace UserStorageSystem.Services
             }
         }
 
+        /// <summary>
+        /// Search users by search criterias
+        /// </summary>
+        /// <param name="searchCriterias">array of interface search criterias</param>
         public IEnumerable<int> SearchForUser(ISearchCriteria[] searchCriterias)
         {
-            List<int> result = searchCriterias[0].Search(_tempData).ToList();
-            for (int i = 1; i < searchCriterias.Length; i++)
+            if (searchCriterias == null)
             {
-                result = result.Intersect(searchCriterias[i].Search(_tempData)).ToList();
+                ts.TraceInformation($"Argument null exception in search request at slave in {AppDomain.CurrentDomain.FriendlyName}");
+                throw new ArgumentNullException();
             }
-            return result;
+            rwls.EnterReadLock();
+            try
+            {
+                List<int> result = searchCriterias[0].Search(_tempData).ToList();
+                for (int i = 1; i < searchCriterias.Length; i++)
+                {
+                    result = result.Intersect(searchCriterias[i].Search(_tempData)).ToList();
+                }
+                return result;
+            }
+            finally
+            {
+                rwls.ExitReadLock();
+            }
         }
 
+        /// <summary>
+        /// Search users by search criterias
+        /// </summary>
+        /// <param name="searchCriteria">interface search criteria</param>
         public IEnumerable<int> SearchForUser(ISearchCriteria searchCriteria)
         {
+            if (searchCriteria == null)
+            {
+                ts.TraceInformation($"Argument null exception in search request at slave in {AppDomain.CurrentDomain.FriendlyName}");
+                throw new ArgumentNullException();
+            }
             rwls.EnterReadLock();
             try
             {
@@ -90,6 +143,9 @@ namespace UserStorageSystem.Services
             }
         }
 
+        /// <summary>
+        /// Start socket listening (asynchronus)
+        /// </summary>
         public void SocketListener()
         {
             ThreadPool.QueueUserWorkItem(async (x) =>
@@ -124,6 +180,18 @@ namespace UserStorageSystem.Services
             });
         }
 
+        /// <summary>
+        /// Creating new listener for network communications
+        /// </summary>
+        private void StartSlave()
+        {
+            _tcpListener = new TcpListener(IPAddress.Parse(ServiceIp), ServicePort);
+            SocketListener();
+        }
+
+        /// <summary>
+        /// update service's local data storage
+        /// </summary>
         private void UpdateData(Dictionary<int, User> tempDictionary)
         {
             rwls.EnterWriteLock();
@@ -138,6 +206,9 @@ namespace UserStorageSystem.Services
             }
         }
 
+        /// <summary>
+        /// Add user to local data storage
+        /// </summary>
         private void UserAdded(User user, int id)
         {
             rwls.EnterWriteLock();
@@ -152,6 +223,9 @@ namespace UserStorageSystem.Services
             }
         }
 
+        /// <summary>
+        /// Delete user from local data storage
+        /// </summary>
         private void UserDeleted(int id)
         {
             rwls.EnterWriteLock();
@@ -170,6 +244,8 @@ namespace UserStorageSystem.Services
             var formatter = new BinaryFormatter();
             return Task.FromResult(formatter.Deserialize(stream) as Message);
         }
+
+        #region NotImplementedMethods
 
         public int Add(User user)
         {
@@ -191,6 +267,6 @@ namespace UserStorageSystem.Services
             throw new NotImplementedException();
         }
 
-        
+        #endregion
     }
 }

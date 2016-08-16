@@ -1,7 +1,10 @@
 ﻿using System;
 
 namespace UserStorageSystem.Entities
-{
+{   
+    /// <summary>
+    /// User class that contains all info about user
+    /// </summary>
     [Serializable]
     public class User : IValidation<User>
     {

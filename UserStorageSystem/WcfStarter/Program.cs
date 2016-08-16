@@ -26,16 +26,12 @@ namespace WcfStarter
                 host.Description.Behaviors.Add(smb);
                 host.Open();
 
-
-
                 Console.WriteLine("Started at {0}", baseAddress);
                 Console.WriteLine("Press any button to stop service :");
                 Console.ReadKey();
-
                 host.Close();
             }
             client.Proxy.Save();
-
         }
     }
 }

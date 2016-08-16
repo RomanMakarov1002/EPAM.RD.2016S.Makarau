@@ -21,22 +21,19 @@ namespace StorageSystemTester
             service.Add(user1);
             Console.ReadKey();
 
-            //Console.WriteLine("Press any key to run ordinary check");
-            //Console.ReadKey();
-            //OrdinaryWorkCheck();
-            //Console.WriteLine("Press any key to run multithreading check");
+            Console.WriteLine("Press any key to run ordinary check");
+            Console.ReadKey();
+            OrdinaryWorkCheck();
+            Console.WriteLine("Press any key to run multithreading check");
 
-            //Console.ReadKey();
+            Console.ReadKey();
 
-            //Thread thread = new Thread(new ThreadStart(CheckWithMultiThreading));
-            //thread.Start();
-            //Console.ReadKey();
-            //cts.Cancel();
-            //thread.Join();
-            //Console.WriteLine("Bingo!");
-
-
-
+            Thread thread = new Thread(new ThreadStart(CheckWithMultiThreading));
+            thread.Start();
+            Console.ReadKey();
+            cts.Cancel();
+            thread.Join();
+            Console.WriteLine("Bingo!");
         }
 
         public static void OrdinaryWorkCheck()
@@ -52,7 +49,6 @@ namespace StorageSystemTester
             client2.Proxy.Add(user2);
             client2.Proxy.Add(user3);
             client2.Services[0].Save();
-
             client2.Services[0].UpLoad();
 
             Console.WriteLine(client2.Proxy.SearchForUser(new SearchByFirstName("Jack")).First());

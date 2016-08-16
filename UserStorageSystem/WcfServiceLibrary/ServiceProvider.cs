@@ -7,9 +7,13 @@ using WcfServiceLibrary;
 
 namespace WcfService
 {
+    /// <summary>
+    /// Wcf service provider
+    /// </summary>
     public class ServiceProvider : IInstanceProvider, IContractBehavior
     {
         private UserStorageSystem.Client _client;
+
         public ServiceProvider(UserStorageSystem.Client client)
         {
             _client = client;

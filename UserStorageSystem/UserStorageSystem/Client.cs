@@ -6,6 +6,9 @@ using UserStorageSystem.Services;
 
 namespace UserStorageSystem
 {
+    /// <summary>
+    /// Client class for configuration client's defaults via AppConfig
+    /// </summary>
     public class Client 
     {
         public List<IService> Services = new List<IService>();      //for direct calls to services by threads (last point from task)
@@ -13,12 +16,19 @@ namespace UserStorageSystem
         public string XmlFilePath;
         public List<KeyValuePair<int, string>> ConnectionSettings = new List<KeyValuePair<int, string>>();
 
+        /// <summary>
+        /// default configurator constructor
+        /// </summary>
         public Client()
         {
             Configurate();
             Proxy = new Proxy(Services.Count, Services);
         }
 
+        /// <summary>
+        /// Parametrized cofigurator constructor
+        /// </summary>
+        /// <param name="domainSetup">domain setups</param>
         public Client(AppDomainSetup domainSetup)
         {
             if (domainSetup == null)
@@ -27,6 +37,10 @@ namespace UserStorageSystem
             Proxy = new Proxy(Services.Count, Services);
         }
 
+        /// <summary>
+        /// Configurates client
+        /// </summary>
+        /// <param name="setup">domain setups</param>
         private void Configurate(AppDomainSetup setup = null)
         {
             ConfigurateConnections();
@@ -55,7 +69,6 @@ namespace UserStorageSystem
                         Services.Add(new MasterUserService().CreateInstanceInNewDomain(newService.DomainName, repository,
                         ConnectionSettings));
                     }
-                    
                 }
                 else
                 {
@@ -73,6 +86,9 @@ namespace UserStorageSystem
             }
         }
 
+        /// <summary>
+        /// Configurates network connections
+        /// </summary>
         private void ConfigurateConnections()
         {
             var connectionConfiguration = ConnectionsConfiguration.GetConfiguration();
@@ -83,6 +99,9 @@ namespace UserStorageSystem
             }
         }
 
+        /// <summary>
+        /// Configurates remote files
+        /// </summary>
         private void ConfigurateFilePaths()
         {
             var filePaths = FilePathsConfigurator.GetConfiguration();

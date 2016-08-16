@@ -5,6 +5,9 @@ using UserStorageSystem.Entities;
 
 namespace UserStorageSystem
 {
+    /// <summary>
+    /// Message class that contains data for services communication
+    /// </summary>
     [Serializable]
     public class Message : ISerializable
     {
